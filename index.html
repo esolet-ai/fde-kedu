@@ -74,8 +74,37 @@ body.is-presenting{padding-bottom:60px}body.is-presenting .read-progress{height:
 @media(max-width:800px){.top-nav{max-width:calc(100% - 180px)}.top-nav a{padding:0 8px}}
 @media(max-width:560px){.header-inner{gap:7px}.top-nav{max-width:none;width:100%;scroll-margin-left:0}.top-nav a{padding:0 12px}.brand{min-width:0}}
 
+
+/* Mobile chapter navigation: accessible disclosure instead of hidden horizontal scrolling. */
+.mobile-menu-toggle{display:none}
+@media(max-width:1023px){
+  html{scroll-padding-top:78px}
+  .header-inner{min-height:68px;gap:9px;flex-wrap:nowrap;padding-top:9px;padding-bottom:9px}
+  .brand{min-width:0;flex:1 1 auto}
+  .mode-button{min-height:44px;padding:10px 11px;order:3;flex:0 0 auto}
+  html.has-js .mobile-menu-toggle{display:inline-flex;order:2;align-items:center;justify-content:center;gap:6px;flex:0 0 auto;min-height:44px;padding:8px 12px;border:1px solid var(--line);background:#fff;border-radius:11px;color:var(--ink-2);font-size:13px;font-weight:750;line-height:1.25}
+  .mobile-menu-toggle .icon{width:18px;height:18px}
+  .mobile-menu-toggle:hover,.mobile-menu-toggle[aria-expanded="true"]{background:var(--blue-tint);border-color:#c6ddff;color:var(--blue-dark)}
+  html.has-js .top-nav{display:none;position:absolute;left:0;right:0;top:100%;width:100%;max-width:none;max-height:calc(100vh - 68px);max-height:calc(100dvh - 68px);overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:auto;padding:16px max(19px,calc((100vw - 1130px)/2));background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line);box-shadow:0 16px 28px rgba(25,31,40,.1);grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;align-self:auto;order:initial;z-index:5}
+  html.has-js .top-nav.is-open{display:grid}
+  .top-nav a{display:flex;justify-content:flex-start;align-items:center;min-width:0;min-height:50px;white-space:normal;border:1px solid var(--line);border-radius:12px;padding:11px 15px;font-size:14px;font-weight:700;line-height:1.4;color:var(--ink-2);background:var(--softest)}
+  .top-nav a:hover,.top-nav a.is-current{background:var(--blue-tint);border-color:#bbd8ff;color:var(--blue-dark)}
+  /* With scripts disabled, all chapter links remain visible as a grid. */
+  html:not(.has-js) .header-inner{flex-wrap:wrap}
+  html:not(.has-js) .top-nav{display:grid;order:3;width:100%;max-width:none;overflow:visible;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:7px 0}
+}
+@media(max-width:390px){
+  .brand{gap:7px}
+  .brand-mark{width:23px;height:23px}
+  .brand-words strong{font-size:12px}
+  .mode-button{padding:9px 8px;font-size:11px}
+  .mode-button span{font-size:11px}
+  html.has-js .mobile-menu-toggle{font-size:12px;padding:8px 9px;gap:4px}
+}
+@media(max-width:340px){.brand-mark{display:none}.header-inner{gap:5px}}
+
 </style>
-  
+
 </head>
 <body>
   <svg class="icon-sprite" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -104,7 +133,10 @@ body.is-presenting{padding-bottom:60px}body.is-presenting .read-progress{height:
         <span class="brand-mark"><span></span><span></span><span></span><span></span></span>
         <span class="brand-words"><strong>AI CAMPUS</strong><small>금융 도메인 AI FDE</small></span>
       </a>
-      <nav class="top-nav" aria-label="챕터 바로가기">
+      <button class="mobile-menu-toggle" id="chapter-menu-toggle" type="button" aria-controls="chapter-nav" aria-expanded="false">
+        <svg class="icon" aria-hidden="true"><use href="#ico-menu"/></svg><span>목차</span>
+      </button>
+      <nav class="top-nav" id="chapter-nav" aria-label="챕터 바로가기">
         <a href="#chapter-1" data-nav="chapter-1">01 소개</a>
         <a href="#chapter-2" data-nav="chapter-2">02 금융 AI</a>
         <a href="#chapter-3" data-nav="chapter-3">03 직무</a>
@@ -345,7 +377,7 @@ body.is-presenting{padding-bottom:60px}body.is-presenting .read-progress{height:
   <footer class="site-footer"><div class="wrap footer-inner"><span>AI CAMPUS <span class="footer-dot">·</span> 금융 도메인 AI FDE 양성과정</span><span>전체 8챕터 안내페이지 · 실제 교육 운영조건은 최종 모집 공고 기준</span></div></footer>
 
   <div class="presenter-toolbar" id="presenter-toolbar" hidden role="region" aria-label="설명 모드 탐색 도구"><div class="presenter-inner"><div class="presenter-status"><span class="presenter-pulse"></span><span id="presenter-label">과정 소개</span><small id="presenter-count">01 / 06</small></div><div class="presenter-actions"><button id="scene-prev" type="button" aria-label="이전 설명 화면"><svg class="icon" style="transform:rotate(180deg)"><use href="#ico-arrow"/></svg><span>이전</span></button><button id="scene-next" type="button"><span>다음</span><svg class="icon"><use href="#ico-arrow"/></svg></button><button id="presenter-exit" type="button" class="exit-presenter">종료</button></div></div></div>
-<script>
+  <script>
 'use strict';
 (() => {
   document.documentElement.classList.add('has-js');
@@ -419,9 +451,37 @@ body.is-presenting{padding-bottom:60px}body.is-presenting .read-progress{height:
   function onScroll(){if(ticking)return;ticking=true;requestAnimationFrame(()=>{let max=document.documentElement.scrollHeight-window.innerHeight;progress.style.width=`${max>0?Math.min(100,Math.max(0,window.scrollY/max*100)):0}%`;ticking=false;});}
   window.addEventListener('scroll',onScroll,{passive:true});window.addEventListener('resize',onScroll,{passive:true});onScroll();
 
+
+  // Mobile navigation: all eight chapters appear at once in a two-column menu.
+  const chapterMenuToggle=$('#chapter-menu-toggle');
+  const chapterNav=$('#chapter-nav');
+  const chapterMenuMedia=window.matchMedia('(max-width:1023px)');
+  const chapterLinks=$$('[data-nav]');
+  function closeChapterMenu(restoreFocus=false){
+    const wasOpen=chapterMenuToggle.getAttribute('aria-expanded')==='true';
+    chapterMenuToggle.setAttribute('aria-expanded','false');
+    chapterNav.classList.remove('is-open');
+    if(restoreFocus && wasOpen) chapterMenuToggle.focus();
+  }
+  chapterMenuToggle.addEventListener('click',()=>{
+    const willOpen=chapterMenuToggle.getAttribute('aria-expanded')!=='true';
+    chapterMenuToggle.setAttribute('aria-expanded',String(willOpen));
+    chapterNav.classList.toggle('is-open',willOpen);
+  });
+  chapterLinks.forEach(link=>link.addEventListener('click',()=>closeChapterMenu()));
+  document.addEventListener('click',event=>{
+    if(chapterMenuMedia.matches && !chapterNav.contains(event.target) && !chapterMenuToggle.contains(event.target))closeChapterMenu();
+  });
+  document.addEventListener('keydown',event=>{
+    if(event.key==='Escape' && chapterMenuToggle.getAttribute('aria-expanded')==='true'){
+      event.preventDefault();closeChapterMenu(true);
+    }
+  });
+  chapterMenuMedia.addEventListener('change',()=>closeChapterMenu());
+
   const nav=$$('[data-nav]');
   if('IntersectionObserver' in window){
-    const navObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{if(entry.isIntersecting){nav.forEach(n=>n.classList.toggle('is-current',n.dataset.nav===entry.target.id));}})},{rootMargin:'-22% 0px -62% 0px',threshold:0});
+    const navObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{if(entry.isIntersecting){nav.forEach(n=>{const current=n.dataset.nav===entry.target.id;n.classList.toggle('is-current',current);if(current)n.setAttribute('aria-current','location');else n.removeAttribute('aria-current');});}})},{rootMargin:'-22% 0px -62% 0px',threshold:0});
     Array.from({length:8},(_,i)=>`chapter-${i+1}`).forEach(id=>{const el=document.getElementById(id);if(el)navObserver.observe(el);});
   }
 
